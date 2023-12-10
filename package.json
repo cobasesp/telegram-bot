@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.0.3",
+    "googlebard": "^1.0.7",
     "openai": "^3.2.1",
     "telegraf": "^4.4.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

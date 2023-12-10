@@ -1,24 +1,43 @@
-const { token } = require('./config.json');
-const { Telegraf } = require('telegraf')
+// Import needed packages
+import "dotenv/config.js";
+const token = process.env.TOKEN;
+const bard_cookie1 = process.env.BARD_COOKIE1;
+const bard_cookie2 = process.env.BARD_COOKIE2;
+const bard_cookie = `__Secure-1PSID=${bard_cookie1}; __Secure-1PSIDTS=${bard_cookie2}`;
+import { Telegraf }  from 'telegraf';
 const bot = new Telegraf(token)
-var http = require('https');
-const cheerio = require('cheerio');
+import http from 'https';
+import cheerio from 'cheerio';
+import { Bard } from "googlebard";
 
-const { Configuration, OpenAIApi } = require("openai");
-// const { dotenv } = require('dotenv');
-require('dotenv').config({path: '.env'})
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
+// Init bard API
+let bardBot = new Bard(bard_cookie, {
+    inMemory: false,
+    savePath: "./conversations.json",
 });
+
+// Optional conversation id
+let conversationId = "some_random_id"; // optional: to make it remember the conversation
+
+/**
+ * Function that receive the question from telegram and ask it to bard
+ * 
+ * @param {*} ctx 
+ */
+async function ask(ctx) {
+    ctx.telegram.sendMessage(ctx.message.chat.id, chatPlaceholderResponses[getRandomInt(chatPlaceholderResponses.length)]);
+    let question = ctx.message.text.toLowerCase().replace("@cobitsbot ", "");
+    console.log(question);
+    let response = await bardBot.ask(question, conversationId); // conversationId is optional
+    ctx.telegram.sendMessage(ctx.message.chat.id, response);
+    // console.log(response);
+}
 
 const chatPlaceholderResponses = [
     "Oido, un momento...",
     "Dame un momento para pensar.",
     "Un segundo!"
 ]
-
-const openai = new OpenAIApi(configuration);
 
 // Comando /start
 bot.start((ctx) => ctx.reply('Welcome'))
@@ -39,14 +58,12 @@ bot.on('message', (ctx) => {
     }else if(ctx.message.text.toLowerCase() === 'epic'){
         getEpicFree(ctx);
     }else if(ctx.message.text.toLowerCase().indexOf('@cobitsbot') == 0){
-        chatgpt(ctx);
+        ask(ctx);
     }else{
         // ctx.telegram.sendCopy(ctx.message.chat.id, ctx.message) // Copy the message
     }
     
 });
-
-
 
 // Cuando el mensaje enviado contenga x palabra
 bot.hears('hi', (ctx) => ctx.reply('Hey there'))
